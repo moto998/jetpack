@@ -17,7 +17,7 @@
 		"build-concurrently": "yarn install-if-deps-outdated && yarn clean && yarn concurrently 'yarn build-php' 'yarn build-packages' 'yarn build-jetpack-concurrently'",
 		"build-jetpack": "cd projects/plugins/jetpack && yarn build",
 		"build-jetpack-concurrently": "cd projects/plugins/jetpack && yarn build-concurrently",
-		"build-packages": "(cd projects/packages/lazy-images && yarn build)",
+		"build-packages": "(cd projects/packages/lazy-images && yarn build) && (cd projects/packages/connection-ui && yarn build)",
 		"build-php": "composer install --ignore-platform-reqs",
 		"build-production": "yarn distclean && yarn install --production=false && yarn build-production-php && yarn build-production-packages && yarn build-production-jetpack",
 		"build-production-concurrently": "yarn distclean && yarn install --production=false && yarn concurrently 'yarn build-production-php' 'yarn build-production-packages' 'yarn build-production-jetpack-concurrently'",
@@ -98,7 +98,7 @@
 		"babel-eslint": "10.1.0",
 		"commander": "6.2.1",
 		"concurrently": "5.3.0",
-		"danger": "10.6.0",
+		"danger": "10.6.1",
 		"eslint": "7.18.0",
 		"eslint-config-prettier": "7.2.0",
 		"eslint-config-wpcalypso": "5.0.0",
@@ -123,7 +123,7 @@
 		"react-dom": "16.13.1"
 	},
 	"engines": {
-		"node": "^12.18.0",
+		"node": "^12.20.1",
 		"yarn": "^1.3.2"
 	}
 }
