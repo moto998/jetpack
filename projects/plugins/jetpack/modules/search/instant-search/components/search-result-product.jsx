@@ -10,6 +10,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import SearchResultComments from './search-result-comments';
+import Gridicon from './gridicon';
 import PhotonImage from './photon-image';
 import ProductRatings from './product-ratings';
 import ProductPrice from './product-price';
@@ -38,6 +39,7 @@ class SearchResultProduct extends Component {
 		return (
 			<li className="jetpack-instant-search__search-result jetpack-instant-search__search-result-product">
 				<a
+					className="jetpack-instant-search__search-result-product-img-link"
 					href={ `//${ fields[ 'permalink.url.raw' ] }` }
 					onClick={ this.props.onClick }
 					rel="noopener noreferrer"
@@ -51,7 +53,11 @@ class SearchResultProduct extends Component {
 							src={ `//${ firstImage }` }
 						/>
 					) : (
-						<div className="jetpack-instant-search__search-result-product-img"></div>
+						<Gridicon
+							className="jetpack-instant-search__search-result-product-img--placeholder"
+							icon="image"
+							style={ {} }
+						/>
 					) }
 				</a>
 				<h3 className="jetpack-instant-search__search-result-title jetpack-instant-search__search-result-product-title">
