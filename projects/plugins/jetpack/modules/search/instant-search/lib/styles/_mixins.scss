@@ -35,3 +35,14 @@
 		@content;
 	}
 }
+
+@mixin break-xlarge-up() {
+	@media ( min-width: #{ ( $break-xl ) } ) {
+		@content;
+	}
+}
+@mixin break-xlarge-down() {
+	@media ( max-width: #{ ( $break-xl - .02px ) } ) {
+		@content;
+	}
+}
