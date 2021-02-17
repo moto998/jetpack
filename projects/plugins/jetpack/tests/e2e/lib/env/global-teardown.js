@@ -1,16 +1,17 @@
 import { readFileSync } from 'fs';
+import SlackReporter from '../reporters/slack';
 
-import SlackReporter from './reporters/slack';
-import config from 'config';
-import path from 'path';
+const os = require( 'os' );
+const rimraf = require( 'rimraf' );
+const path = require( 'path' );
+
+const DIR = path.join( os.tmpdir(), 'jest_pw_global_setup' );
 
 /**
  * Goes through the messages in slack-specific log, and send these messages into slack
  */
 async function processSlackLog() {
-	const log = readFileSync(
-		path.resolve( config.get( 'testOutputDir' ), 'logs/e2e-slack.log' )
-	).toString();
+	const log = readFileSync( path.resolve( global.LOGS_DIR, 'e2e-slack.log' ) ).toString();
 	const slack = new SlackReporter();
 	const messages = getMessages( log );
 
@@ -45,10 +46,7 @@ async function processSlackLog() {
 		}
 	}
 
-	await slack.sendFileToSlack(
-		path.resolve( config.get( 'testOutputDir' ), 'logs/e2e-simple.log' ),
-		options
-	);
+	await slack.sendFileToSlack( path.resolve( global.LOGS_DIR, 'e2e-simple.log' ), options );
 }
 
 function getMessages( log ) {
@@ -64,7 +62,16 @@ function getMessages( log ) {
 }
 
 module.exports = async function () {
+	console.log( '>>>>> global-teardown' );
+
+	console.log( 'Closing browser' );
+	await global.browser.close();
+	rimraf.sync( DIR );
+
 	if ( process.env.CI ) {
 		await processSlackLog();
 	}
+
+	console.log( 'Closing tunnel' );
+	await global.tunnelManager.close();
 };

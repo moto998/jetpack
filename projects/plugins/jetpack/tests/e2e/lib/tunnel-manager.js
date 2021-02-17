@@ -48,16 +48,17 @@ export default class TunnelManager {
 		}
 		const tunnel = result;
 
-		const url = tunnel.url.replace( 'http:', 'https:' );
+		this.url = tunnel.url.replace( 'http:', 'https:' );
 
 		tunnel.on( 'close', () => {
-			logger.info( '!!!!!! TUNNEL is closed for ', this.url );
+			logger.info( `!!!!!! TUNNEL is closed for ${ this.url }` );
 		} );
 
-		logger.info( `#### CREATING A TUNNEL! Config: ${ JSON.stringify( tunnelConfig ) }. ${ url }` );
+		logger.info(
+			`#### CREATING A TUNNEL! Config: ${ JSON.stringify( tunnelConfig ) }. ${ this.url }`
+		);
 
 		this.tunnel = tunnel;
-		this.url = url;
 		this.subdomain = this.getSubdomain( this.url );
 		return tunnel;
 	}
@@ -93,13 +94,11 @@ export default class TunnelManager {
 		try {
 			const response = await axios.get( `${ this.host }/api/tunnels/${ this.subdomain }/delete` );
 			if ( response ) {
-				logger.info( response.data );
+				logger.debug( JSON.stringify( response.data ) );
 			}
 		} catch ( error ) {
 			logger.error( error );
 		}
-		// wait for tunnel to close properly
-		await page.waitForTimeout( 1000 );
 	}
 
 	getSubdomain( url ) {

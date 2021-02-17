@@ -2,12 +2,11 @@
 /**
  * External dependencies
  */
-import { get, wrap } from 'lodash';
+import { get } from 'lodash';
 import fs from 'fs';
 /**
  * Internal dependencies
  */
-import { takeScreenshot } from './reporters/screenshot';
 import { logDebugLog, logHTML } from './page-helper';
 import logger from './logger';
 import { execWpCommand } from './utils-helper';
@@ -16,39 +15,15 @@ import {
 	loginToWpcomIfNeeded,
 	loginToWpSite,
 } from './flows/jetpack-connect';
-import TunnelManager from './tunnel-manager';
 import config from 'config';
 import path from 'path';
 
 const { E2E_TIMEOUT, E2E_DEBUG, CI, E2E_LOG_HTML } = process.env;
 let currentBlock;
 
+export const catchBeforeAll = async ( callback, errorHandler = defaultErrorHandler ) => {};
+
 const defaultErrorHandler = async ( error, name ) => {
-	let filePath;
-
-	try {
-		filePath = await takeScreenshot( currentBlock, name );
-		reporter.addAttachment(
-			`Test failed: ${ currentBlock } :: ${ name }`,
-			fs.readFileSync( filePath ),
-			'image/png'
-		);
-	} catch ( e ) {
-		logger.warn( `Failed to add attachment to allure report: ${ e }` );
-	}
-
-	// If running tests in CI
-	if ( CI ) {
-		await logDebugLog();
-		logger.slack( {
-			type: 'failure',
-			message: { block: currentBlock, name, error },
-		} );
-		if ( filePath ) {
-			logger.slack( { type: 'file', message: filePath } );
-		}
-	}
-
 	if ( E2E_LOG_HTML ) {
 		logHTML();
 	}
@@ -59,23 +34,6 @@ const defaultErrorHandler = async ( error, name ) => {
 	}
 
 	throw error;
-};
-
-/**
- * Wrapper around `beforeAll` to be able to handle thrown exceptions within the hook.
- * Main reason is to be able to universally capture screenshots on exceptions.
- *
- * @param {*} callback
- * @param {*} errorHandler
- */
-export const catchBeforeAll = async ( callback, errorHandler = defaultErrorHandler ) => {
-	beforeAll( async () => {
-		try {
-			await callback();
-		} catch ( error ) {
-			await errorHandler( error, 'beforeAll' );
-		}
-	} );
 };
 
 async function setUserAgent() {
@@ -189,16 +147,6 @@ if ( E2E_DEBUG ) {
 	jest.setTimeout( 2147483647 ); // max 32-bit signed integer
 }
 
-// Use wrap to preserve all previous `wrap`s
-jasmine.getEnv().describe = wrap( jasmine.getEnv().describe, ( func, ...args ) => {
-	try {
-		currentBlock = args[ 0 ];
-		func( ...args );
-	} catch ( e ) {
-		throw e;
-	}
-} );
-
 /**
  * Override the test case method so we can take screenshots of assertion failures.
  *
@@ -221,46 +169,9 @@ export const step = async ( stepName, fn ) => {
 	reporter.endStep();
 };
 
-jasmine.getEnv().addReporter( {
-	jasmineStarted() {
-		logger.info( '############# \n\n\n' );
-	},
-	suiteStarted( result ) {
-		logger.info( `STARTING SUITE: ${ result.fullName }, description: ${ result.description }` );
-	},
-	suiteDone( result ) {
-		logger.info( `SUITE ENDED: ${ result.status }\n` );
-	},
-	specStarted( result ) {
-		logger.info( `STARTING SPEC: ${ result.fullName }, description: ${ result.description }` );
-		jasmine.currentTest = result;
-	},
-	specDone( result ) {
-		logger.info( `SPEC ENDED: ${ result.status }\n` );
-		jasmine.currentTest = null;
-	},
-} );
-
-const tunnelManager = new TunnelManager();
-
 // Before every test suite run, delete all content created by the test. This ensures
 // other posts/comments/etc. aren't dirtying tests and tests don't depend on
 // each other's side-effects.
 catchBeforeAll( async () => {
-	await setUserAgent();
-
-	// Handles not saved changed dialog in block editor
-	observeConsoleLogging();
-
-	page.on( 'dialog', async dialog => {
-		await dialog.accept();
-	} );
-
-	const url = await tunnelManager.create( process.env.SKIP_CONNECT );
-	global.tunnelUrl = url;
-	await maybePreConnect();
-} );
-
-afterAll( async () => {
-	await tunnelManager.close();
+	// await setUserAgent();
 } );
