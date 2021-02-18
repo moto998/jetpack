@@ -10,35 +10,6 @@ import path from 'path';
 import config from 'config';
 import chalk from 'chalk';
 
-async function setupContext() {
-	logger.debug( `>>>>> setupContext` );
-	global.context = await global.browser.newContext( {
-		viewport: {
-			width: 1280,
-			height: 1024,
-		},
-		recordVideo: {
-			dir: global.VIDEO_DIR,
-			//todo revisit video resolution with Playwright 1.9.0
-			size: {
-				width: 800,
-				height: 600,
-			},
-		},
-	} );
-
-	global.page = await global.context.newPage();
-
-	// todo this fails, fix it
-	// page.on( 'dialog', async dialog => {
-	// 	await dialog.accept();
-	// } );
-
-	// todo change user agent
-	const userAgent = await page.evaluate( () => navigator.userAgent );
-	logger.info( chalk.yellow( `User agent: ${ userAgent }` ) );
-}
-
 async function maybePreConnect() {
 	const wpcomUser = 'defaultUser';
 	const mockPlanData = true;
@@ -64,20 +35,28 @@ async function maybePreConnect() {
 
 beforeAll( async () => {
 	logger.debug( '>>>>> beforeAll' );
-	await setupContext();
+	global.page = await global.context.newPage();
 	await maybePreConnect();
-	await global.context.close();
+	// await global.page.close();
 } );
 
 beforeEach( async () => {
 	logger.debug( '>>>>> beforeEach' );
-	await setupContext();
-	await page.goto( URL, { waitUntil: 'domcontentloaded' } );
+	global.page = await global.context.newPage();
+
+	// todo this fails, fix it
+	// page.on( 'dialog', async dialog => {
+	// 	await dialog.accept();
+	// } );
+
+	// todo change user agent
+	const userAgent = await page.evaluate( () => navigator.userAgent );
+	logger.info( chalk.yellow( `User agent: ${ userAgent }` ) );
 } );
 
 afterEach( async () => {
 	logger.debug( '>>>>> afterEach' );
-	await global.context.close();
+	// await global.page.close();
 } );
 
 afterAll( async () => {

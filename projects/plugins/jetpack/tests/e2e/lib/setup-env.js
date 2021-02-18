@@ -164,9 +164,9 @@ global.it = async ( name, func ) => {
 };
 
 export const step = async ( stepName, fn ) => {
-	reporter.startStep( stepName );
+	// reporter.startStep( stepName );
 	await fn();
-	reporter.endStep();
+	// reporter.endStep();
 };
 
 // Before every test suite run, delete all content created by the test. This ensures

@@ -5,6 +5,8 @@ import axios from 'axios';
 import path from 'path';
 
 import logger from './logger';
+import { globals } from '../jest.config';
+
 
 export default class TunnelManager {
 	constructor() {

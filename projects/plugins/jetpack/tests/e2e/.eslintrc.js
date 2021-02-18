@@ -7,7 +7,7 @@ module.exports = {
 		'plugin:jest/recommended',
 	],
 	env: {
-		// jest: true,
+		jest: true,
 		browser: true,
 	},
 	globals: {

@@ -9,12 +9,12 @@ const os = require( 'os' );
 const DIR = path.join( os.tmpdir(), 'jest_pw_global_setup' );
 const { HEADLESS, SLOWMO, DEVTOOLS } = process.env;
 
+// Any globals defined here are only available in global-teardown and nowhere else!
+// https://jestjs.io/docs/en/configuration.html#globalsetup-string
 module.exports = async function () {
 	console.log( '>>>>> global-setup' );
 	global.tunnelManager = new TunnelManager();
-	const tunnelUrl = await global.tunnelManager.create( process.env.SKIP_CONNECT );
-	global.URL = tunnelUrl.replace( 'http:', 'https:' );
-	console.log( global.URL );
+	await global.tunnelManager.create( process.env.SKIP_CONNECT );
 
 	// Launch a browser server that client can connect to
 	global.browser = await chromium.launchServer( {

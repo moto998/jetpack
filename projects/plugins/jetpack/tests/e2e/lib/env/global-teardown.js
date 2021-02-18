@@ -62,9 +62,10 @@ function getMessages( log ) {
 }
 
 module.exports = async function () {
+	console.log( global.SITE_URL );
 	console.log( '>>>>> global-teardown' );
 
-	console.log( 'Closing browser' );
+	console.log( '>>>>> Closing browser' );
 	await global.browser.close();
 	rimraf.sync( DIR );
 
@@ -72,6 +73,6 @@ module.exports = async function () {
 		await processSlackLog();
 	}
 
-	console.log( 'Closing tunnel' );
+	console.log( '>>>>> Closing tunnel' );
 	await global.tunnelManager.close();
 };
