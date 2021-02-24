@@ -2,7 +2,9 @@
  * External dependencies
  */
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import { __, _x, _n, sprintf } from '@wordpress/i18n';
+import { FacebookPreview, TwitterPreview, SearchPreview } from '@automattic/social-previews';
 
 /**
  * Internal dependencies
@@ -14,6 +16,7 @@ import SettingsCard from 'components/settings-card';
 import SettingsGroup from 'components/settings-group';
 import { ModuleToggle } from 'components/module-toggle';
 import { FormLabel, FormTextarea } from 'components/forms';
+import FoldableCard from 'components/foldable-card';
 
 export const SEO = withModuleSettingsFormHelpers(
 	class extends Component {
@@ -21,11 +24,40 @@ export const SEO = withModuleSettingsFormHelpers(
 			frontPageMetaMaxLength: 300,
 			frontPageMetaSuggestedLength: 159,
 			moduleOptionsArray: [ 'advanced_seo_front_page_description', 'advanced_seo_title_formats' ],
+			siteIconPreviewSize: 512,
 		};
 
 		trackConfigureClick = () => {
 			analytics.tracks.recordJetpackClick( 'configure-seo' );
 		};
+
+		SocialPreviewGoogle = siteData => (
+			<SearchPreview
+				title={ siteData.title }
+				url={ siteData.url }
+				description={ siteData.frontPageMetaDescription }
+			/>
+		);
+
+		SocialPreviewFacebook = siteData => (
+			<FacebookPreview
+				title={ siteData.title }
+				url={ siteData.url }
+				type="website"
+				description={ siteData.frontPageMetaDescription }
+				image={ siteData.image }
+			/>
+		);
+
+		SocialPreviewTwitter = siteData => (
+			<TwitterPreview
+				title={ siteData.title }
+				url={ siteData.url }
+				type="summary"
+				description={ siteData.frontPageMetaDescription }
+				image={ siteData.image }
+			/>
+		);
 
 		render() {
 			const seo = this.props.getModule( 'seo-tools' );
@@ -34,6 +66,17 @@ export const SEO = withModuleSettingsFormHelpers(
 				'advanced_seo_front_page_description'
 			);
 			const seoTitleFormats = this.props.getOptionValue( 'advanced_seo_title_formats' );
+			const siteData = {
+				title: this.props.siteData.data.name || '',
+				url: this.props.siteData.data.URL || '',
+				frontPageMetaDescription: frontPageMetaDescription
+					? frontPageMetaDescription
+					: this.props.siteData.data.description || '',
+				image:
+					this.props.siteData.data.icon && this.props.siteData.data.icon.img
+						? `${ this.props.siteData.data.icon.img }?s=${ this.constants.siteIconPreviewSize }`
+						: '',
+			};
 
 			return (
 				<SettingsCard
@@ -109,8 +152,29 @@ export const SEO = withModuleSettingsFormHelpers(
 										) }
 									</div>
 								</div>
-								<div>Todo: Show Previews button</div>
 							</SettingsGroup>
+							<FoldableCard
+								header={ __(
+									'Expand to preview how SEO settings will look on Google, Facebook, and Twitter.',
+									'jetpack'
+								) }
+								clickableHeader={ true }
+								className="jp-seo-social-previews"
+							>
+								<p>Todo: social icons?</p>
+								<span className="jp-seo-social-previews-label">
+									{ __( 'Google search', 'jetpack' ) }
+								</span>
+								{ this.SocialPreviewGoogle( siteData ) }
+								<hr />
+								<span className="jp-seo-social-previews-label">
+									{ __( 'Facebook', 'jetpack' ) }
+								</span>
+								{ this.SocialPreviewFacebook( siteData ) }
+								<hr />
+								<span className="jp-seo-social-previews-label">{ __( 'Twitter', 'jetpack' ) }</span>
+								{ this.SocialPreviewTwitter( siteData ) }
+							</FoldableCard>
 						</div>
 					) }
 				</SettingsCard>
@@ -118,3 +182,9 @@ export const SEO = withModuleSettingsFormHelpers(
 		}
 	}
 );
+
+export default connect( state => {
+	return {
+		siteData: state.jetpack.siteData,
+	};
+} )( SEO );
